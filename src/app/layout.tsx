@@ -10,8 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PHOTON | Advanced Cybersecurity Solutions",
-  description: "Protect Your Digital Presence with Real-Time Threat Detection",
+  title: "PHOTON | Pokročilé Kybernetické Zabezpečenie",
+  description:
+    "Chráňte svoju digitálnu prítomnosť s detekciou hrozieb v reálnom čase",
 };
 
 export default function RootLayout({
