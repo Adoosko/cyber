@@ -1,4 +1,5 @@
 import { CookieConsent } from "@/components/CookieConsent";
+import { FloatingContactButtons } from "@/components/FloatingContactButtons";
 import { Navbar } from "@/components/Navbar";
 import { ScrollSpyProvider } from "@/components/ScrollSpyProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -31,6 +32,7 @@ export default function RootLayout({
             <Navbar />
             <main className="relative">
               <SmoothScroll>{children}</SmoothScroll>
+              <FloatingContactButtons />
               {/* Global background gradient */}
               <div className="fixed inset-0 -z-50 bg-black">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(11,99,248,0.06),rgba(0,0,0,0)_50%)]" />
