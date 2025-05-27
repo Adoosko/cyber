@@ -1,5 +1,6 @@
 import { CookieConsent } from "@/components/CookieConsent";
 import { Navbar } from "@/components/Navbar";
+import { ScrollSpyProvider } from "@/components/ScrollSpyProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { PricingProvider } from "@/context/PricingContext";
 import type { Metadata } from "next";
@@ -26,15 +27,17 @@ export default function RootLayout({
     <html lang="sk" className="scroll-smooth">
       <body className={`${inter.className} bg-black text-white antialiased`}>
         <PricingProvider>
-          <Navbar />
-          <main className="relative">
-            <SmoothScroll>{children}</SmoothScroll>
-            {/* Global background gradient */}
-            <div className="fixed inset-0 -z-50 bg-black">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(11,99,248,0.06),rgba(0,0,0,0)_50%)]" />
-            </div>
-          </main>
-          <CookieConsent />
+          <ScrollSpyProvider>
+            <Navbar />
+            <main className="relative">
+              <SmoothScroll>{children}</SmoothScroll>
+              {/* Global background gradient */}
+              <div className="fixed inset-0 -z-50 bg-black">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(11,99,248,0.06),rgba(0,0,0,0)_50%)]" />
+              </div>
+            </main>
+            <CookieConsent />
+          </ScrollSpyProvider>
         </PricingProvider>
       </body>
     </html>

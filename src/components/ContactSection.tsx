@@ -1,10 +1,17 @@
 "use client";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { usePricing } from "@/context/PricingContext";
 import { motion } from "framer-motion";
 import { Loader2, Mail, MapPin, Send } from "lucide-react";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Update the type definition for reCAPTCHA v2
 declare global {
@@ -74,23 +81,25 @@ const ContactInfoCard = ({ icon: Icon, title, value, color }: ContactInfo) => (
 );
 
 export const ContactSection = () => {
-  const { selectedPlan } = usePricing();
+  const { selectedPlan, setSelectedPlan } = usePricing();
   const [subject, setSubject] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [isRecaptchaLoaded, setIsRecaptchaLoaded] = useState(false);
   const [recaptchaError, setRecaptchaError] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (selectedPlan) {
       setSubject(`Záujem o balík: ${selectedPlan}`);
+      // Smooth scroll to contact form
+      sectionRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedPlan]);
 
   const handleRecaptchaLoad = () => {
     try {
-      // Verify that we have the site key
       const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
       if (!siteKey) {
         throw new Error("reCAPTCHA site key is not configured");
@@ -98,9 +107,7 @@ export const ContactSection = () => {
 
       setIsRecaptchaLoaded(true);
       setRecaptchaError(null);
-      console.log("✅ reCAPTCHA loaded successfully");
     } catch (error) {
-      console.error("❌ reCAPTCHA initialization error:", error);
       setRecaptchaError(
         error instanceof Error
           ? error.message
@@ -121,8 +128,6 @@ export const ContactSection = () => {
     setFormError("");
 
     try {
-      console.log("🔄 Starting form submission...");
-
       if (!isRecaptchaLoaded) {
         throw new Error("reCAPTCHA not loaded yet");
       }
@@ -134,7 +139,6 @@ export const ContactSection = () => {
         return;
       }
 
-      console.log("🔄 Verifying reCAPTCHA...");
       const verifyResponse = await fetch("/api/verify", {
         method: "POST",
         headers: {
@@ -144,7 +148,6 @@ export const ContactSection = () => {
       });
 
       const verifyData = await verifyResponse.json();
-      console.log("📊 Verification result:", verifyData);
 
       if (!verifyData.success) {
         setFormError(
@@ -154,10 +157,6 @@ export const ContactSection = () => {
         return;
       }
 
-      console.log("✅ reCAPTCHA verification successful");
-      console.log("🔄 Proceeding with email...");
-
-      // Create email content
       const emailSubject = encodeURIComponent(
         subject || "Kontaktný formulár KTA"
       );
@@ -165,11 +164,9 @@ export const ContactSection = () => {
       const contactEmail =
         process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@kta.sk";
 
-      // Create URLs for different email clients
       const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${emailSubject}&body=${emailBody}`;
       const mailtoUrl = `mailto:${contactEmail}?subject=${emailSubject}&body=${emailBody}`;
 
-      // Show email client selection dialog
       const clientChoice = window.confirm(
         "Chcete otvoriť Gmail? Kliknite 'OK' pre Gmail alebo 'Zrušiť' pre predvolený emailový klient."
       );
@@ -180,11 +177,9 @@ export const ContactSection = () => {
         window.location.href = mailtoUrl;
       }
 
-      // Reset form after successful submission
       setMessage("");
       window.grecaptcha.reset();
-    } catch (error) {
-      console.error("❌ Form submission error:", error);
+    } catch {
       setFormError("Nastala chyba pri odosielaní. Skúste to znova neskôr.");
       if (isRecaptchaLoaded) {
         window.grecaptcha.reset();
@@ -193,14 +188,6 @@ export const ContactSection = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Debug output for development
-  useEffect(() => {
-    console.log(
-      "Current reCAPTCHA site key:",
-      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-    );
-  }, []);
 
   return (
     <>
@@ -211,7 +198,11 @@ export const ContactSection = () => {
         strategy="afterInteractive"
       />
 
-      <section id="contact" className="relative py-24 bg-black overflow-hidden">
+      <section
+        ref={sectionRef}
+        id="contact"
+        className="relative py-24 bg-black overflow-hidden"
+      >
         {/* Background Elements */}
         <div className="absolute inset-0">
           {/* Grid pattern */}
@@ -264,6 +255,56 @@ export const ContactSection = () => {
               </motion.p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                >
+                  <label
+                    className="block text-white/80 mb-2 text-sm"
+                    htmlFor="plan"
+                  >
+                    Balík
+                  </label>
+                  <Select
+                    value={selectedPlan || undefined}
+                    onValueChange={setSelectedPlan}
+                  >
+                    <SelectTrigger
+                      id="plan"
+                      className="w-full px-4 py-6 rounded-lg bg-white/[0.05] border border-white/[0.08] text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#0B63F8]/50 focus:border-[#0B63F8] transition-colors hover:bg-white/[0.08]"
+                    >
+                      <SelectValue placeholder="Vyberte balík (voliteľné)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-black/90 backdrop-blur-xl border border-white/[0.08] text-white rounded-lg">
+                      <SelectItem
+                        value="Základ"
+                        className="focus:bg-white/[0.08] focus:text-white hover:bg-white/[0.08] hover:text-white"
+                      >
+                        Základ
+                      </SelectItem>
+                      <SelectItem
+                        value="Štandard"
+                        className="focus:bg-white/[0.08] focus:text-white hover:bg-white/[0.08] hover:text-white"
+                      >
+                        Štandard
+                      </SelectItem>
+                      <SelectItem
+                        value="Komplex"
+                        className="focus:bg-white/[0.08] focus:text-white hover:bg-white/[0.08] hover:text-white"
+                      >
+                        Komplex
+                      </SelectItem>
+                      <SelectItem
+                        value="Na mieru"
+                        className="focus:bg-white/[0.08] focus:text-white hover:bg-white/[0.08] hover:text-white"
+                      >
+                        Na mieru
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

@@ -294,8 +294,15 @@ export const HeroSection = () => {
     </motion.span>
   ));
 
+  const scrollToPricing = () => {
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-[150px] pb-[80px] sm:pt-[100px] sm:pb-[60px] overflow-hidden bg-black text-white">
+    <section
+      id="hero"
+      className="relative min-h-screen flex flex-col items-center justify-center pt-[150px] pb-[80px] sm:pt-[100px] sm:pb-[60px] overflow-hidden bg-black text-white"
+    >
       {/* Background Elements Wrapper - important for z-index context */}
       <div className="absolute inset-0 z-0">
         {" "}
@@ -347,6 +354,7 @@ export const HeroSection = () => {
           >
             {/* --- Button 1: Primary Action (e.g., Request Security Audit) --- */}
             <motion.button
+              onClick={scrollToPricing}
               whileHover={{
                 scale: 1.03,
                 boxShadow:
@@ -406,6 +414,7 @@ export const HeroSection = () => {
 
             {/* --- Button 2: Secondary Action (e.g., Discover Our Platform) --- */}
             <motion.button
+              onClick={scrollToPricing}
               whileHover={{
                 scale: 1.03,
                 borderColor: "rgba(11,99,248,0.6)",
@@ -459,15 +468,8 @@ export const HeroSection = () => {
                     }),
                   }}
                   initial={{ opacity: 0 }}
-                  animate={
-                    // Using variants for group-hover effect on opacity
-                    // This is a bit tricky inline. For complex group hover states, CSS or variants on parent is better.
-                    // For simplicity, let's make it appear directly.
-                    // If you need it to animate on group hover, you'd typically use variants on the parent 'group'
-                    // or more complex CSS. Let's make it appear with the button's initial animation for now.
-                    { opacity: 1 } // Simplified: appears with button. For group-hover opacity, use CSS or parent variants.
-                  }
-                  transition={{ delay: 0.1 + i * 0.05 }} // This transition is for the initial appearance
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 + i * 0.05 }}
                 />
               ))}
 
@@ -478,7 +480,6 @@ export const HeroSection = () => {
               {/* Optional: Subtle animated glare on hover */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-20 pointer-events-none"
-                // Using variants to ensure animation plays only on actual hover
                 variants={{
                   initial: { x: "-100%", opacity: 0 },
                   hover: {
@@ -495,8 +496,8 @@ export const HeroSection = () => {
                     },
                   },
                 }}
-                initial="initial" // Start with the 'initial' variant
-                whileHover="hover" // Animate to 'hover' variant when the parent 'group' is hovered
+                initial="initial"
+                whileHover="hover"
               />
             </motion.button>
           </motion.div>

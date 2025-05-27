@@ -48,6 +48,11 @@ export const Navbar = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const scrollToPricing = () => {
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+    setMobileMenuOpen(false);
+  };
+
   return (
     <>
       <motion.nav
@@ -127,6 +132,7 @@ export const Navbar = () => {
             {/* CTA Button */}
             <div className="flex items-center space-x-6">
               <motion.button
+                onClick={scrollToPricing}
                 whileHover={{
                   scale: 1.02,
                   transition: { duration: 0.2, ease: "easeOut" },
@@ -324,8 +330,8 @@ export const Navbar = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`mt-4 w-full py-3 px-4 bg-[#0B63F8]/10 hover:bg-[#0B63F8]/20 rounded border border-[#0B63F8]/20 text-white transition-colors duration-200 ${"bg-white text-black"}`}
+                onClick={scrollToPricing}
+                className={`mt-4 w-full py-3 px-4 bg-[#0B63F8]/10 hover:bg-[#0B63F8]/20 rounded border border-[#0B63F8]/20 text-black transition-colors duration-200 ${"bg-white text-black"}`}
               >
                 Získať Prístup
               </motion.button>
