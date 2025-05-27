@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -65,24 +66,13 @@ export const Navbar = () => {
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="relative">
                 <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center overflow-hidden border border-white/20 relative">
-                  <motion.span
-                    className="text-white font-bold text-xl relative z-10"
-                    animate={{
-                      opacity: [1, 0.7, 1],
-                      textShadow: [
-                        "0 0 8px rgba(11,99,248,0.5)",
-                        "0 0 12px rgba(11,99,248,0.8)",
-                        "0 0 8px rgba(11,99,248,0.5)",
-                      ],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    P
-                  </motion.span>
+                  <Image
+                    src="/logo.png"
+                    alt="KTA Logo"
+                    width={32}
+                    height={32}
+                    className="relative z-10"
+                  />
                   {/* Animated scanner line */}
                   <motion.div
                     className="absolute w-full h-[1px] bg-[#0B63F8]/30"
@@ -100,10 +90,10 @@ export const Navbar = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-medium text-white tracking-wider">
-                  PHOTON
+                  KTA
                 </span>
                 <span className="text-[10px] text-white/70 tracking-[0.2em] uppercase">
-                  Bezpečnosť
+                  Kybernetická Technická Asociácia
                 </span>
               </div>
             </Link>

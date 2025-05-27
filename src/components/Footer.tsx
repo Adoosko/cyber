@@ -3,8 +3,10 @@
 import { motion } from "framer-motion";
 
 export const Footer = () => {
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@kta.sk";
+
   return (
-    <footer className="relative py-8 overflow-hidden bg-black">
+    <footer className="relative py-12 overflow-hidden bg-black">
       {/* Background Elements */}
       <div className="absolute inset-0">
         {/* Grid pattern */}
@@ -24,16 +26,112 @@ export const Footer = () => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {/* Company Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <h3 className="text-white text-lg font-semibold">O Spoločnosti</h3>
+            <div className="space-y-2">
+              <p className="text-white/60">KTA, s.r.o.</p>
+              <p className="text-white/60">Kybernetická Technická Asociácia</p>
+              <p className="text-white/60">IČO: 48058076</p>
+              <p className="text-white/60">Informačné technológie</p>
+              <p className="text-white/60">Bratislavský kraj</p>
+              <div className="pt-2">
+                <p className="text-white/60">Sídlo spoločnosti:</p>
+                <p className="text-white/60">
+                  Smolenická 3135/3 851 05 Bratislava
+                </p>
+                <p className="text-white/60">Slovenská republika</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Services */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <h3 className="text-white text-lg font-semibold">Služby</h3>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="#expertise"
+                  className="text-white/60 hover:text-white/80 transition-colors"
+                >
+                  Odbornosť
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#services"
+                  className="text-white/60 hover:text-white/80 transition-colors"
+                >
+                  Služby
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#pricing"
+                  className="text-white/60 hover:text-white/80 transition-colors"
+                >
+                  Cenník
+                </a>
+              </li>
+            </ul>
+          </motion.div>
+
+          {/* Contact */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <h3 className="text-white text-lg font-semibold">Kontakt</h3>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="#contact"
+                  className="text-white/60 hover:text-white/80 transition-colors"
+                >
+                  Kontaktný formulár
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="text-white/60 hover:text-white/80 transition-colors"
+                >
+                  {contactEmail}
+                </a>
+              </li>
+              <li>
+                <p className="text-white/60">
+                  Ochrana osobných údajov: Vaše údaje spracúvame v súlade s GDPR
+                  a používame ich len na odpoveď na vašu správu.
+                </p>
+              </li>
+            </ul>
+          </motion.div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex flex-col items-center justify-center"
+          className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/10"
         >
-          <p className="text-white/60 text-sm">
-            © 2024 PHOTON Bezpečnosť. Všetky práva vyhradené.
+          <p className="text-white/60 text-sm mb-4 md:mb-0">
+            © 2024 KTA, s.r.o. Všetky práva vyhradené.
           </p>
-          <p className="text-white/40 text-sm mt-2">
+          <p className="text-white/40 text-sm">
             Vytvoril{" "}
             <a
               href="https://github.com/adrianfinik"

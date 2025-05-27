@@ -1,5 +1,6 @@
 "use client";
 
+import { usePricing } from "@/context/PricingContext";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -13,48 +14,52 @@ interface PricingPlan {
 
 const pricingPlans: PricingPlan[] = [
   {
-    name: "Základný",
-    price: "199€",
-    description: "Pre malé firmy a začínajúce podniky",
+    name: "Bezplatný balík",
+    price: "0€",
+    description: "Zistenie povinností podľa zákona NIS2",
     features: [
-      "Základný bezpečnostný audit",
-      "Firewall monitoring",
-      "Email ochrana",
-      "24/7 základná podpora",
-      "Mesačné reporty",
-      "Až 5 užívateľov",
+      "Bezplatné poradenstvo k zákonu 69/2018 (NIS2)",
+      "Pomoc s vyplnením oznamovacieho formulára pre NBÚ",
+      "Všeobecné informácie o právnej úprave",
+      "Základná orientácia v požiadavkách zákona",
     ],
   },
   {
-    name: "Business",
-    price: "499€",
-    description: "Pre stredné firmy s vyššími nárokmi",
+    name: "Základ",
+    price: "190€",
+    description: "Pre najmenšie subjekty",
     features: [
-      "Pokročilý bezpečnostný audit",
-      "Real-time monitoring",
-      "DLP riešenie",
-      "24/7 prioritná podpora",
-      "Týždenné reporty",
-      "Až 20 užívateľov",
-      "Penetračné testovanie",
-      "Incident response plán",
+      "Základné spracovanie kyberbezpečnostnej dokumentácie",
+      "Vymenovanie externého MKB",
+      "Vedenie záznamov o činnostiach",
+      "Pravidelná komunikácia s vedením organizácie",
+      "Vypracovanie základnej analýzy rizík",
+    ],
+  },
+  {
+    name: "Štandard",
+    price: "290€",
+    description: "Pre malé firmy",
+    features: [
+      "Všetko z Balíka 1",
+      "Vypracovanie a aktualizácia bezpečnostnej politiky",
+      "Plán školení pre zamestnancov",
+      "Monitoring dodávateľských zmlúv",
+      "Revízia smerníc a reakčných postupov",
     ],
     isPopular: true,
   },
   {
-    name: "Enterprise",
-    price: "Na mieru",
-    description: "Pre veľké spoločnosti s komplexnými potrebami",
+    name: "Komplex",
+    price: "490€",
+    description: "Pre firmy so širšími aktivitami a vyšším rizikom",
     features: [
-      "Kompletný bezpečnostný audit",
-      "24/7 SOC monitoring",
-      "Vlastné DLP riešenie",
-      "Dedikovaný support tím",
-      "Real-time reporty",
-      "Neobmedzený počet užívateľov",
-      "Pravidelné pen-testy",
-      "Incident response tím",
-      "Security awareness tréning",
+      "Všetko z Balíkov 1 a 2",
+      "Vypracovanie komplexnej dokumentácie ISMS",
+      "Podpora pri testoch zraniteľnosti",
+      "Pravidelné mesačné reporty a odporúčania",
+      "Účasť na kontrolách NBÚ / auditná podpora",
+      "Individuálne konzultácie a asistencia",
     ],
   },
 ];
@@ -81,6 +86,17 @@ const cardVariants = {
 };
 
 export const PricingSection = () => {
+  const { selectedPlan, setSelectedPlan } = usePricing();
+
+  const handleSelectPlan = (planName: string) => {
+    setSelectedPlan(planName);
+    // Scroll to contact form
+    const contactSection = document.getElementById("contact");
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section id="pricing" className="relative py-24 overflow-hidden bg-white">
       {/* Background Elements */}
@@ -140,7 +156,7 @@ export const PricingSection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
         >
           {pricingPlans.map((plan) => (
             <motion.div
@@ -154,11 +170,11 @@ export const PricingSection = () => {
             >
               {plan.isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-sm font-medium bg-white text-black border border-black/10">
-                  Najpopulárnejší
+                  Odporúčaný
                 </div>
               )}
 
-              <div className="mb-8">
+              <div>
                 <h3
                   className={`text-2xl font-bold mb-2 ${
                     plan.isPopular ? "text-white" : "text-black"
@@ -173,7 +189,7 @@ export const PricingSection = () => {
                 >
                   {plan.description}
                 </p>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mb-6">
                   <span
                     className={`text-4xl font-bold ${
                       plan.isPopular ? "text-white" : "text-black"
@@ -219,32 +235,50 @@ export const PricingSection = () => {
               </ul>
 
               <button
+                onClick={() => handleSelectPlan(plan.name)}
                 className={`w-full py-4 px-6 rounded-lg font-medium transition-all active:scale-[0.98] ${
-                  plan.isPopular
+                  selectedPlan === plan.name
+                    ? "bg-[#00A3FF] text-white hover:bg-[#0082CC]"
+                    : plan.isPopular
                     ? "bg-white text-black hover:bg-white/90"
                     : "bg-black text-white hover:bg-black/90"
                 }`}
               >
-                Vybrať Plán
+                {selectedPlan === plan.name ? "Vybraný Plán" : "Vybrať Plán"}
               </button>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Bottom CTA */}
+        {/* Additional Services */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <p className="text-black/60 mb-4">Potrebujete špeciálne riešenie?</p>
-          <a
-            href="#contact"
-            className="text-black hover:text-black/80 font-medium transition-colors"
-          >
-            Kontaktujte nás pre individuálnu ponuku →
-          </a>
+          <div className="max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold text-black mb-4">
+              Riešenia na mieru
+            </h3>
+            <p className="text-black/60 mb-4">
+              V prípade špecifických požiadaviek (napr. pôsobnosť vo viacerých
+              krajinách, vysoká úroveň rizika, cloudové služby, školy, štátne
+              inštitúcie a pod.) radi pripravíme individuálnu ponuku.
+            </p>
+            <div className="mt-8 p-6 rounded-xl bg-black/[0.02] border border-black/10">
+              <h4 className="text-xl font-bold text-black mb-2">
+                Produkty navyše
+              </h4>
+              <p className="text-black/60">
+                Dodanie ďalších služieb ako napríklad GAP analýza, penetračné
+                testy a podobne vykonávame od 290€ / 1 človekodeň
+              </p>
+            </div>
+            <p className="mt-8 text-sm text-black/40">
+              Uvedené ceny sú bez DPH.
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

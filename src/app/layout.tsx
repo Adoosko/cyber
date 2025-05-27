@@ -1,5 +1,7 @@
+import { CookieConsent } from "@/components/CookieConsent";
 import { Navbar } from "@/components/Navbar";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { PricingProvider } from "@/context/PricingContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -10,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PHOTON | Pokročilé Kybernetické Zabezpečenie",
+  title: "KTA | Kybernetická Technická Asociácia",
   description:
-    "Chráňte svoju digitálnu prítomnosť s detekciou hrozieb v reálnom čase",
+    "Profesionálne služby kybernetickej bezpečnosti a poradenstvo v súlade so zákonom NIS2. Kybernetická Technická Asociácia - Váš partner pre digitálnu bezpečnosť.",
 };
 
 export default function RootLayout({
@@ -21,16 +23,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="sk" className="scroll-smooth">
       <body className={`${inter.className} bg-black text-white antialiased`}>
-        <Navbar />
-        <main className="relative">
-          <SmoothScroll>{children}</SmoothScroll>
-          {/* Global background gradient */}
-          <div className="fixed inset-0 -z-50 bg-black">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(11,99,248,0.06),rgba(0,0,0,0)_50%)]" />
-          </div>
-        </main>
+        <PricingProvider>
+          <Navbar />
+          <main className="relative">
+            <SmoothScroll>{children}</SmoothScroll>
+            {/* Global background gradient */}
+            <div className="fixed inset-0 -z-50 bg-black">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(11,99,248,0.06),rgba(0,0,0,0)_50%)]" />
+            </div>
+          </main>
+          <CookieConsent />
+        </PricingProvider>
       </body>
     </html>
   );
