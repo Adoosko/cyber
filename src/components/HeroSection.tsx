@@ -20,10 +20,13 @@ const ANIMATION_CONFIG = {
 } as const;
 
 // --- Throttle utility ---
-const throttle = (func: Function, delay: number) => {
+const throttle = <T extends (...args: Parameters<T>) => void>(
+  func: T,
+  delay: number
+): T => {
   let timeoutId: NodeJS.Timeout;
   let lastExecTime = 0;
-  return (...args: any[]) => {
+  return ((...args: Parameters<T>) => {
     const currentTime = Date.now();
     if (currentTime - lastExecTime > delay) {
       func(...args);
@@ -32,7 +35,7 @@ const throttle = (func: Function, delay: number) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => func(...args), delay);
     }
-  };
+  }) as T;
 };
 
 // --- Optimized FloatingLines ---
