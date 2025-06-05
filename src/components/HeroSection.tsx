@@ -2,216 +2,257 @@
 
 import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
-// --- FloatingLines (Data Stream Style) ---
-const FloatingLines = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-    {[...Array(12)].map((_, i) => (
-      <motion.div
-        key={`line-${i}`}
-        initial={{ opacity: 0, x: -150 }}
-        animate={{
-          opacity: [0.03, 0.1, 0.03],
-          x: ["-10%", "110%"],
-        }}
-        transition={{
-          duration: 7 + Math.random() * 6,
-          delay: i * 0.25,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="absolute h-[1px] w-[100px] sm:w-[150px] bg-gradient-to-r from-transparent via-[#0B63F8]/20 to-transparent"
-        style={{
-          top: `${Math.random() * 100}%`,
-          left: `-${Math.random() * 50 + 50}px`,
-          transform: `rotate(${Math.random() * 60 - 30}deg)`,
-        }}
-      />
-    ))}
-  </div>
-);
+// --- Optimized Constants ---
+const Z_INDICES = {
+  BACKGROUND: -30,
+  GRID: -20,
+  EFFECTS: -10,
+  CONTENT: 10,
+  OVERLAY: 20,
+} as const;
 
-// --- GridPattern ---
+const ANIMATION_CONFIG = {
+  FLOATING_LINES_COUNT: 6, // Reduced from 12
+  GRID_HIGHLIGHTS_COUNT: 2, // Reduced from 3
+  MOUSE_THROTTLE_MS: 16, // ~60fps
+} as const;
+
+// --- Throttle utility ---
+const throttle = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  let lastExecTime = 0;
+  return (...args: any[]) => {
+    const currentTime = Date.now();
+    if (currentTime - lastExecTime > delay) {
+      func(...args);
+      lastExecTime = currentTime;
+    } else {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    }
+  };
+};
+
+// --- Optimized FloatingLines ---
+const FloatingLines = () => {
+  const lineElements = useMemo(
+    () =>
+      [...Array(ANIMATION_CONFIG.FLOATING_LINES_COUNT)].map((_, i) => (
+        <motion.div
+          key={`line-${i}`}
+          initial={{ opacity: 0, x: -150 }}
+          animate={{
+            opacity: [0.03, 0.08, 0.03],
+            x: ["-10%", "110%"],
+          }}
+          transition={{
+            duration: 8 + Math.random() * 4, // Slightly longer duration
+            delay: i * 0.4, // Increased delay between animations
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute h-[1px] w-[120px] sm:w-[150px] bg-gradient-to-r from-transparent via-[#0B63F8]/15 to-transparent"
+          style={{
+            top: `${Math.random() * 100}%`,
+            left: `-${Math.random() * 50 + 50}px`,
+            transform: `rotate(${
+              Math.random() * 40 - 20
+            }deg) translate3d(0, 0, 0)`,
+            willChange: "transform, opacity",
+          }}
+        />
+      )),
+    []
+  );
+
+  return (
+    <div
+      className="absolute inset-0 overflow-hidden pointer-events-none"
+      style={{ zIndex: Z_INDICES.EFFECTS }}
+    >
+      {lineElements}
+    </div>
+  );
+};
+
+// --- Optimized GridPattern ---
 const GridPattern = () => (
   <>
-    {/* Main grid */}
+    {/* Static grid layers */}
     <div
-      className="absolute inset-0 opacity-[0.07] -z-20"
+      className="absolute inset-0 opacity-[0.06]"
       style={{
+        zIndex: Z_INDICES.GRID,
         backgroundImage: `
-          linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)
+          linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
         `,
         backgroundSize: "40px 40px",
       }}
     />
-    {/* Larger grid overlay */}
+
     <div
-      className="absolute inset-0 opacity-[0.05] -z-20"
+      className="absolute inset-0 opacity-[0.04]"
       style={{
+        zIndex: Z_INDICES.GRID,
         backgroundImage: `
-          linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)
+          linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)
         `,
         backgroundSize: "160px 160px",
       }}
     />
-    {/* Radial gradient overlay */}
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.08),transparent_50%)] -z-20" />
 
-    {/* Animated scanning grid line - Vertical */}
-    <motion.div
-      className="absolute inset-0 -z-20"
-      animate={{
-        backgroundPosition: ["0px 0px", "40px 0px"],
-      }}
-      transition={{
-        duration: 2,
-        ease: "linear",
-        repeat: Infinity,
-      }}
-      style={{
-        backgroundImage:
-          "linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px)",
-        backgroundSize: "40px 100%",
-      }}
+    {/* Optimized radial gradient */}
+    <div
+      className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.06),transparent_50%)]"
+      style={{ zIndex: Z_INDICES.GRID }}
     />
 
-    {/* Animated scanning grid line - Horizontal */}
-    <motion.div
-      className="absolute inset-0 -z-20"
-      animate={{
-        backgroundPosition: ["0px 0px", "0px 40px"],
-      }}
-      transition={{
-        duration: 2,
-        ease: "linear",
-        repeat: Infinity,
-      }}
-      style={{
-        backgroundImage:
-          "linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)",
-        backgroundSize: "100% 40px",
-      }}
-    />
-
-    {/* Grid highlight spots */}
-    {[...Array(3)].map((_, i) => (
+    {/* Reduced grid highlights */}
+    {[...Array(ANIMATION_CONFIG.GRID_HIGHLIGHTS_COUNT)].map((_, i) => (
       <motion.div
         key={`highlight-${i}`}
-        className="absolute w-[200px] h-[200px] opacity-[0.02] -z-20"
+        className="absolute w-[180px] h-[180px] opacity-[0.015]"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.02, 0.05, 0.02],
+          scale: [1, 1.15, 1],
+          opacity: [0.015, 0.03, 0.015],
         }}
         transition={{
-          duration: 4,
-          delay: i * 1.5,
+          duration: 6, // Longer duration
+          delay: i * 2, // Increased delay
           repeat: Infinity,
           ease: "easeInOut",
         }}
         style={{
-          left: `${25 + i * 25}%`,
-          top: `${30 + (i % 2) * 20}%`,
+          zIndex: Z_INDICES.GRID,
+          left: `${30 + i * 40}%`,
+          top: `${35 + (i % 2) * 30}%`,
           background:
             "radial-gradient(circle, rgba(255,255,255,1) 0%, transparent 70%)",
+          transform: "translate3d(0, 0, 0)",
+          willChange: "transform, opacity",
         }}
       />
     ))}
 
-    {/* Animated gradient overlay */}
+    {/* Simplified animated gradient - removed continuous scanning */}
     <motion.div
-      className="absolute inset-0 opacity-[0.03] -z-20"
+      className="absolute inset-0 opacity-[0.02]"
       animate={{
         background: [
-          "radial-gradient(circle at 0% 0%, rgba(255,255,255,0.1) 0%, transparent 50%)",
-          "radial-gradient(circle at 100% 100%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+          "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0%, transparent 50%)",
+          "radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 0%, transparent 50%)",
         ],
       }}
       transition={{
-        duration: 5,
+        duration: 8, // Longer duration
         ease: "easeInOut",
         repeat: Infinity,
         repeatType: "reverse",
       }}
-    />
-
-    {/* Subtle noise texture overlay */}
-    <div
-      className="absolute inset-0 opacity-[0.015] -z-20 mix-blend-soft-light"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 2000 2000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        backgroundSize: "200px 200px",
+        zIndex: Z_INDICES.GRID,
+        transform: "translate3d(0, 0, 0)",
+        willChange: "background",
       }}
     />
   </>
 );
 
-// --- HolographicCore ---
+// --- Optimized HolographicCore ---
 const HolographicCore = () => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  useEffect(() => {
-    mouseX.set(window.innerWidth / 2);
-    mouseY.set(window.innerHeight / 2);
-    const onMouseMove = (e: MouseEvent) => {
+  const throttledMouseMove = useCallback(
+    throttle((e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, [mouseX, mouseY]);
+    }, ANIMATION_CONFIG.MOUSE_THROTTLE_MS),
+    [mouseX, mouseY]
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      mouseX.set(window.innerWidth / 2);
+      mouseY.set(window.innerHeight / 2);
+      window.addEventListener("mousemove", throttledMouseMove);
+      return () => window.removeEventListener("mousemove", throttledMouseMove);
+    }
+  }, [mouseX, mouseY, throttledMouseMove]);
 
   const coreX = useTransform(
     mouseX,
     (val) =>
-      (val / (typeof window !== "undefined" ? window.innerWidth : 1) - 0.5) * 30
+      (val / (typeof window !== "undefined" ? window.innerWidth : 1) - 0.5) * 20
   );
   const coreY = useTransform(
     mouseY,
     (val) =>
       (val / (typeof window !== "undefined" ? window.innerHeight : 1) - 0.5) *
-      30
+      20
   );
 
   return (
     <motion.div
-      className="absolute top-1/2 left-1/2 w-56 h-56 md:w-80 md:h-80 opacity-5 -z-10"
-      style={{ x: "-50%", y: "-50%", translateX: coreX, translateY: coreY }}
+      className="absolute top-1/2 left-1/2 w-48 h-48 md:w-64 md:h-64 opacity-[0.03]"
+      style={{
+        x: "-50%",
+        y: "-50%",
+        translateX: coreX,
+        translateY: coreY,
+        zIndex: Z_INDICES.EFFECTS,
+        transform: "translate3d(0, 0, 0)",
+        willChange: "transform",
+      }}
     >
       <motion.div
         className="w-full h-full rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(11,99,248,0.15) 0%, rgba(11,99,248,0.03) 35%, transparent 65%)",
+            "radial-gradient(circle, rgba(11,99,248,0.12) 0%, rgba(11,99,248,0.02) 35%, transparent 65%)",
+          transform: "translate3d(0, 0, 0)",
+          willChange: "transform, opacity",
         }}
-        animate={{ scale: [1, 1.03, 1], opacity: [0.5, 0.7, 0.5] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        animate={{
+          scale: [1, 1.02, 1],
+          opacity: [0.3, 0.5, 0.3],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
       />
     </motion.div>
   );
 };
 
-// --- ScanningLine ---
+// --- Simplified ScanningLine ---
 const ScanningLine = () => (
   <motion.div
-    className="absolute top-0 left-0 w-full h-[1px] bg-[#0B63F8]/40 shadow-[0_0_10px_3px_rgba(11,99,248,0.25)] -z-10"
+    className="absolute top-0 left-0 w-full h-[1px] bg-[#0B63F8]/30 shadow-[0_0_8px_2px_rgba(11,99,248,0.2)]"
     initial={{ y: "-100%" }}
     animate={{ y: ["-5%", "105%"] }}
     transition={{
-      duration: 6,
+      duration: 8, // Slower animation
       repeat: Infinity,
-      repeatDelay: 4,
+      repeatDelay: 6, // Longer delay between repeats
       ease: "easeInOut",
+    }}
+    style={{
+      zIndex: Z_INDICES.EFFECTS,
+      transform: "translate3d(0, 0, 0)",
+      willChange: "transform",
     }}
   />
 );
 
-// --- NEW: Infinity Moving Logos ---
+// --- Optimized InfinityLogos ---
 const companyLogos = [
-  // Replace with actual SVG logo components or <img> tags with transparent PNGs
   { name: "NovaCore", placeholder: "NC" },
   { name: "QuantumLeap", placeholder: "QL" },
   { name: "AetherNet", placeholder: "AN" },
@@ -221,38 +262,48 @@ const companyLogos = [
 ];
 
 const InfinityLogos = () => {
-  const duplicatedLogos = [...companyLogos, ...companyLogos]; // Duplicate for seamless loop
+  const duplicatedLogos = useMemo(() => [...companyLogos, ...companyLogos], []);
 
   return (
     <div className="relative w-full overflow-hidden group">
-      {/* Optional: Fades on the sides to enhance the infinite effect */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-black via-black/80 to-transparent z-20 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-black via-black/80 to-transparent z-20 pointer-events-none" />
+      <div
+        className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none"
+        style={{ zIndex: Z_INDICES.OVERLAY }}
+      />
+      <div
+        className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none"
+        style={{ zIndex: Z_INDICES.OVERLAY }}
+      />
 
       <motion.div
         className="flex flex-nowrap"
-        animate={{ x: ["0%", "-100%"] }} // Moves the duplicated set
+        animate={{ x: ["0%", "-100%"] }}
         transition={{
           x: {
             repeat: Infinity,
             repeatType: "loop",
-            duration: 30, // Adjust duration for speed
+            duration: 35, // Slightly slower
             ease: "linear",
           },
+        }}
+        style={{
+          transform: "translate3d(0, 0, 0)",
+          willChange: "transform",
         }}
       >
         {duplicatedLogos.map((logo, index) => (
           <div
             key={`${logo.name}-${index}`}
             className="flex-shrink-0 w-40 sm:w-48 h-20 sm:h-24 p-4 mx-3 sm:mx-5 flex items-center justify-center
-                       rounded-xl border border-white/10 bg-white/5 backdrop-blur-md 
-                       hover:bg-white/10 transition-all duration-300"
-            // Glassmorphism: bg-white/5, backdrop-blur-md
+                       rounded-xl border border-white/8 bg-white/3 backdrop-blur-sm 
+                       hover:bg-white/6 transition-all duration-300"
+            style={{
+              transform: "translate3d(0, 0, 0)",
+              willChange: "transform, background-color",
+            }}
           >
-            {/* Replace with actual logo image or SVG */}
-            <span className="text-white/50 text-lg font-medium group-hover:text-white/70 transition-colors">
+            <span className="text-white/40 text-lg font-medium group-hover:text-white/60 transition-colors duration-300">
               {logo.name}
-              {/* <img src={`/logos/${logo.name}.svg`} alt={logo.name} className="h-8 sm:h-10 max-w-full" /> */}
             </span>
           </div>
         ))}
@@ -261,52 +312,66 @@ const InfinityLogos = () => {
   );
 };
 
-// --- Main HeroSection Component ---
+// --- Optimized Main HeroSection Component ---
 export const HeroSection = () => {
   const headlineText = "Predvídať. Chrániť. ";
-
   const priorityText = "Dominovať.";
 
-  const headlineChars = headlineText.split("").map((char, i) => (
-    <motion.span
-      key={`headline-${char}-${i}`}
-      initial={{ opacity: 0, y: 25 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: i * 0.025 }}
-      className="inline-block"
-    >
-      {char === " " ? "\u00A0" : char}
-    </motion.span>
-  ));
+  const headlineChars = useMemo(
+    () =>
+      headlineText.split("").map((char, i) => (
+        <motion.span
+          key={`headline-${char}-${i}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: i * 0.02 }}
+          className="inline-block"
+          style={{ willChange: "transform, opacity" }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      )),
+    [headlineText]
+  );
 
-  const priorityChars = priorityText.split("").map((char, i) => (
-    <motion.span
-      key={`priority-${char}-${i}`}
-      initial={{ opacity: 0, y: 25 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.6,
-        delay: headlineText.length * 0.025 + i * 0.035,
-      }}
-      className="inline-block"
-    >
-      {char === " " ? "\u00A0" : char}
-    </motion.span>
-  ));
+  const priorityChars = useMemo(
+    () =>
+      priorityText.split("").map((char, i) => (
+        <motion.span
+          key={`priority-${char}-${i}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: headlineText.length * 0.02 + i * 0.03,
+          }}
+          className="inline-block"
+          style={{ willChange: "transform, opacity" }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      )),
+    [priorityText, headlineText.length]
+  );
 
-  const scrollToPricing = () => {
+  const scrollToPricing = useCallback(() => {
     document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   return (
     <section
       id="hero"
       className="relative min-h-screen flex flex-col items-center justify-center pt-[150px] pb-[80px] sm:pt-[100px] sm:pb-[60px] overflow-hidden bg-black text-white"
+      style={{
+        transform: "translate3d(0, 0, 0)",
+        willChange: "transform",
+      }}
     >
-      {/* Background Elements Wrapper - important for z-index context */}
-      <div className="absolute inset-0 z-0">
-        {" "}
-        {/* Parent for all background elements */}
+      {/* Optimized Background Elements */}
+      <div
+        className="absolute inset-0"
+        style={{ zIndex: Z_INDICES.BACKGROUND }}
+      >
         <GridPattern />
         <HolographicCore />
         <FloatingLines />
@@ -314,97 +379,80 @@ export const HeroSection = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 relative z-10 flex flex-col items-center flex-grow">
-        {" "}
-        {/* Added flex-grow */}
-        <div className="max-w-4xl mx-auto text-center flex-grow flex flex-col justify-center">
-          {" "}
-          {/* Centering content vertically */}
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-6 sm:mb-8 relative z-10 leading-tight sm:leading-none">
+      <div
+        className="container mx-auto px-4 sm:px-6 relative flex flex-col items-center flex-grow"
+        style={{ zIndex: Z_INDICES.CONTENT }}
+      >
+        <div className="max-w-4xl pt-12 mx-auto text-center flex-grow flex flex-col justify-center">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-6 sm:mb-8 relative leading-tight sm:leading-none">
             {headlineChars}
             <span className="relative inline-flex">
               <span className="text-[#0B63F8]">{priorityChars}</span>
               <motion.span
-                className="absolute inset-0 text-[#0B63F8] opacity-50 blur-lg"
-                animate={{ opacity: [0.2, 0.6, 0.2] }}
+                className="absolute inset-0 text-[#0B63F8] opacity-40 blur-lg"
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
                 transition={{
-                  duration: 2.2,
+                  duration: 3,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
+                style={{ willChange: "opacity" }}
               >
                 {priorityText}
               </motion.span>
             </span>
           </h1>
+
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
             className="text-lg md:text-xl text-white/70 mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed"
+            style={{ willChange: "transform, opacity" }}
           >
             Prinášame inovatívne stratégie kybernetickej bezpečnosti a pokročilú
             ochranu pre bezpečnú digitálnu budúcnosť.
           </motion.p>
+
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.0 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+            style={{ willChange: "transform, opacity" }}
           >
-            {/* --- Button 1: Primary Action (e.g., Request Security Audit) --- */}
+            {/* Primary Button */}
             <motion.button
               onClick={scrollToPricing}
               whileHover={{
-                scale: 1.03,
-                boxShadow:
-                  "0px 0px 30px -5px rgba(11,99,248,0.6), 0px 0px 20px -10px rgba(11,99,248,0.4)",
-                transition: { duration: 0.3, ease: "easeOut" },
+                scale: 1.02,
+                boxShadow: "0px 0px 25px -5px rgba(11,99,248,0.5)",
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
               whileTap={{
-                scale: 0.97,
-                boxShadow: "0px 0px 15px -5px rgba(11,99,248,0.4)",
+                scale: 0.98,
                 transition: { duration: 0.1, ease: "easeInOut" },
               }}
               className="relative group w-full sm:w-auto px-8 py-3.5 rounded-xl 
                          bg-gradient-to-br from-[#0B63F8] to-[#0747A6]
                          text-white font-semibold text-base overflow-hidden
-                         border border-blue-500/30 shadow-lg"
+                         border border-blue-500/20 shadow-lg"
+              style={{
+                transform: "translate3d(0, 0, 0)",
+                willChange: "transform, box-shadow",
+              }}
             >
-              {/* Subtle inner Bevel / Highlight for depth */}
-              <div className="absolute inset-[1px] rounded-[11px] bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-[1px] rounded-[11px] bg-gradient-to-br from-white/8 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
 
-              {/* Animated Shine Effect */}
-              <motion.div
-                className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-to-br 
-                           from-transparent via-white/30 to-transparent opacity-0 
-                           group-hover:opacity-30 pointer-events-none"
-                animate={{
-                  rotate: [0, 360],
-                  x: ["-50%", "50%", "-50%"],
-                }}
-                transition={{
-                  rotate: { duration: 6, repeat: Infinity, ease: "linear" },
-                  x: {
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    repeatType: "mirror",
-                  },
-                }}
-              />
-
-              {/* Content */}
-              <span className="relative z-10 flex items-center justify-center">
+              <span className="relative flex items-center justify-center">
                 Vyžiadať Bezpečnostný Audit
                 <motion.span
                   className="ml-2"
-                  animate={{ x: [0, 3, 0, -3, 0] }}
+                  animate={{ x: [0, 2, 0, -2, 0] }}
                   transition={{
-                    duration: 1.5,
+                    duration: 2,
                     repeat: Infinity,
                     ease: "easeInOut",
-                    delay: 0.2,
                   }}
                 >
                   <ArrowRightCircleIcon className="w-5 h-5" />
@@ -412,111 +460,53 @@ export const HeroSection = () => {
               </span>
             </motion.button>
 
-            {/* --- Button 2: Secondary Action (e.g., Discover Our Platform) --- */}
+            {/* Secondary Button */}
             <motion.button
               onClick={scrollToPricing}
               whileHover={{
-                scale: 1.03,
-                borderColor: "rgba(11,99,248,0.6)",
-                boxShadow: "0px 0px 20px -8px rgba(11,99,248,0.3)",
-                transition: { duration: 0.3, ease: "easeOut" },
+                scale: 1.02,
+                borderColor: "rgba(11,99,248,0.4)",
+                boxShadow: "0px 0px 15px -8px rgba(11,99,248,0.2)",
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
               whileTap={{
-                scale: 0.97,
-                borderColor: "rgba(11,99,248,0.4)",
+                scale: 0.98,
                 transition: { duration: 0.1, ease: "easeInOut" },
               }}
               className="relative group w-full sm:w-auto px-8 py-3.5 rounded-xl
-                         bg-white/5 backdrop-blur-md 
+                         bg-white/3 backdrop-blur-sm 
                          text-white/90 hover:text-white 
                          font-semibold text-base overflow-hidden
-                         border border-white/10 hover:border-blue-500/40 shadow-md transition-colors duration-300"
+                         border border-white/8 hover:border-blue-500/30 shadow-md transition-colors duration-200"
+              style={{
+                transform: "translate3d(0, 0, 0)",
+                willChange: "transform, border-color, box-shadow",
+              }}
             >
-              {/* Subtle Corner Accents (Optional) */}
-              {[...Array(4)].map((_, i) => (
-                <motion.div
-                  key={`corner-${i}`}
-                  className="absolute w-3 h-3 border-[#0B63F8]/0 group-hover:border-[#0B63F8]/70 transition-colors duration-300"
-                  style={{
-                    ...(i === 0 && {
-                      top: -1,
-                      left: -1,
-                      borderTopWidth: "2px",
-                      borderLeftWidth: "2px",
-                      borderTopLeftRadius: "0.7rem",
-                    }),
-                    ...(i === 1 && {
-                      top: -1,
-                      right: -1,
-                      borderTopWidth: "2px",
-                      borderRightWidth: "2px",
-                      borderTopRightRadius: "0.7rem",
-                    }),
-                    ...(i === 2 && {
-                      bottom: -1,
-                      left: -1,
-                      borderBottomWidth: "2px",
-                      borderLeftWidth: "2px",
-                      borderBottomLeftRadius: "0.7rem",
-                    }),
-                    ...(i === 3 && {
-                      bottom: -1,
-                      right: -1,
-                      borderBottomWidth: "2px",
-                      borderRightWidth: "2px",
-                      borderBottomRightRadius: "0.7rem",
-                    }),
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 + i * 0.05 }}
-                />
-              ))}
-
-              {/* Content */}
-              <span className="relative z-10 flex items-center justify-center">
+              <span className="relative flex items-center justify-center">
                 Objavte Našu Platformu
               </span>
-              {/* Optional: Subtle animated glare on hover */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-20 pointer-events-none"
-                variants={{
-                  initial: { x: "-100%", opacity: 0 },
-                  hover: {
-                    x: "100%",
-                    opacity: 0.2,
-                    transition: {
-                      x: {
-                        type: "tween",
-                        ease: "linear",
-                        duration: 0.8,
-                        delay: 0.1,
-                      },
-                      opacity: { duration: 0.3 },
-                    },
-                  },
-                }}
-                initial="initial"
-                whileHover="hover"
-              />
             </motion.button>
           </motion.div>
         </div>
-        {/* Trusted By Section - NEW Infinity Moving Logos */}
+
+        {/* Optimized Trusted By Section */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 1.2 }}
-          className="w-full mt-24 sm:mt-32 md:mt-36 relative" // Takes full width for the scroller
+          transition={{ duration: 0.7, delay: 1.2 }}
+          className="w-full mt-24 sm:mt-32 md:mt-36 relative"
+          style={{ willChange: "transform, opacity" }}
         >
-          <p className="text-sm text-white/50 mb-10 text-center tracking-wider uppercase">
+          <p className="text-sm text-white/60 mb-10 text-center tracking-wider uppercase">
             Dôverujú Nám Lídri & Inovátori
           </p>
           <InfinityLogos />
         </motion.div>
       </div>
+
       {/* Bottom Decorative Line */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0B63F8]/15 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0B63F8]/10 to-transparent" />
     </section>
   );
 };
